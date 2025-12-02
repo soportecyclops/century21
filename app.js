@@ -4,38 +4,34 @@
 const SUPABASE_URL = "https://kliecdqosksoilbwgbxx.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsaWVjZHFvc2tzb2lsYndnYnh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2NjE3NjIsImV4cCI6MjA4MDIzNzc2Mn0.kLcGwhxDxCFw1865dvKuG7jUulWMd3WJI1de5W2kEOE";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Helpers
-const qs = (sel) => document.querySelector(sel);
-const qsa = (sel) => document.querySelectorAll(sel);
+const qs  = (s) => document.querySelector(s);
+const qsa = (s) => document.querySelectorAll(s);
 
-// Vistas
-const loginView = qs("#login-view");
+// Views
+const loginView     = qs("#login-view");
 const dashboardView = qs("#dashboard-view");
 
-// Inputs
-const loginForm = qs("#login-form");
-const loginFeedback = qs("#login-feedback");
+// Forms
+const loginForm      = qs("#login-form");
+const loginFeedback  = qs("#login-feedback");
 
-// Client form
-const clientForm = qs("#client-form");
-const formFeedback = qs("#form-feedback");
+const clientForm     = qs("#client-form");
+const formFeedback   = qs("#form-feedback");
 
-const clientList = qs("#client-list");
-const searchInput = qs("#search");
+const clientList     = qs("#client-list");
+const searchInput    = qs("#search");
+const btnRefresh     = qs("#btn-refresh");
+const btnLogout      = qs("#btn-logout");
 
 // ===============================
 // SESIÓN
 // ===============================
 async function checkSession() {
     const { data } = await supabase.auth.getSession();
-
-    if (data?.session) {
-        showDashboard();
-    } else {
-        showLogin();
-    }
+    data?.session ? showDashboard() : showLogin();
 }
 
 function showLogin() {
@@ -55,7 +51,7 @@ function showDashboard() {
 loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = qs("#login-email").value.trim();
+    const email    = qs("#login-email").value.trim();
     const password = qs("#login-password").value.trim();
 
     loginFeedback.textContent = "Procesando...";
@@ -72,7 +68,7 @@ loginForm.addEventListener("submit", async (e) => {
 });
 
 // LOGOUT
-qs("#btn-logout").addEventListener("click", async () => {
+btnLogout.addEventListener("click", async () => {
     await supabase.auth.signOut();
     showLogin();
 });
@@ -88,7 +84,9 @@ async function loadClients() {
     let query = supabase.from("clients").select("*").order("nombre", { ascending: true });
 
     if (searchTerm) {
-        query = query.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,celular.ilike.%${searchTerm}%`);
+        query = query.or(
+            `nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,celular.ilike.%${searchTerm}%`
+        );
     }
 
     const { data, error } = await query;
@@ -107,9 +105,7 @@ function renderClients(rows) {
         return;
     }
 
-    clientList.innerHTML = rows
-        .map(
-            (c) => `
+    clientList.innerHTML = rows.map(c => `
         <tr>
             <td>${c.nombre}</td>
             <td>${c.email}</td>
@@ -121,9 +117,8 @@ function renderClients(rows) {
                 <button class="btn-black" onclick="editClient('${c.id}')">Editar</button>
                 <button class="btn-black" onclick="deleteClient('${c.id}')">Eliminar</button>
             </td>
-        </tr>`
-        )
-        .join("");
+        </tr>
+    `).join("");
 }
 
 // ===============================
@@ -137,12 +132,12 @@ function editClient(id) {
         .single()
         .then(({ data }) => {
             qs("#client-id").value = data.id;
-            qs("#nombre").value = data.nombre;
-            qs("#email").value = data.email;
-            qs("#celular").value = data.celular;
-            qs("#empresa").value = data.empresa ?? "";
-            qs("#estado").value = data.estado ?? "nuevo";
-            qs("#interes").value = data.interes ?? "";
+            qs("#nombre").value    = data.nombre;
+            qs("#email").value     = data.email;
+            qs("#celular").value   = data.celular;
+            qs("#empresa").value   = data.empresa ?? "";
+            qs("#estado").value    = data.estado ?? "nuevo";
+            qs("#interes").value   = data.interes ?? "";
 
             window.scrollTo({ top: 0, behavior: "smooth" });
         });
@@ -154,6 +149,8 @@ function editClient(id) {
 clientForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const id = qs("#client-id").value;
+
     const clientData = {
         nombre: qs("#nombre").value,
         email: qs("#email").value,
@@ -163,15 +160,9 @@ clientForm.addEventListener("submit", async (e) => {
         interes: qs("#interes").value,
     };
 
-    const id = qs("#client-id").value;
-
-    let response;
-
-    if (id) {
-        response = await supabase.from("clients").update(clientData).eq("id", id);
-    } else {
-        response = await supabase.from("clients").insert(clientData);
-    }
+    let response = id
+        ? await supabase.from("clients").update(clientData).eq("id", id)
+        : await supabase.from("clients").insert(clientData);
 
     if (response.error) {
         formFeedback.textContent = "Error guardando datos";
@@ -195,7 +186,9 @@ async function deleteClient(id) {
 // BUSCADOR
 // ===============================
 searchInput.addEventListener("input", loadClients);
-qs("#btn-refresh").addEventListener("click", loadClients);
+btnRefresh.addEventListener("click", loadClients);
 
-// Initialize
+// ===============================
+// INIT
+// ===============================
 checkSession();
