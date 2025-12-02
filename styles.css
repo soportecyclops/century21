@@ -1,193 +1,226 @@
-/* === VARIABLES === */
+/* =============================== */
+/*   CENTURY 21 BLACK & GOLD UI    */
+/* =============================== */
+
 :root {
-  --black: #0D0D0D;
-  --black-soft: #1a1a1a;
-  --gray: #2a2a2a;
-  --gray-light: #e5e5e5;
+    --gold: #c9a646;
+    --gold-light: #dabf6d;
+    --black: #111;
+    --gray: #222;
+    --gray-light: #2d2d2d;
+    --white: #fff;
 
-  --gold: #D4AF37;
-  --gold-light: #e5c96b;
-
-  --text: #ffffff;
-  --text-soft: #cfcfcf;
-
-  --radius: 12px;
-  --shadow: 0 0 20px rgba(0,0,0,0.3);
+    --radius: 10px;
+    --shadow: 0 4px 16px rgba(0,0,0,0.25);
+    --transition: 0.2s ease;
 }
 
-/* === GLOBAL === */
 body {
-  margin: 0;
-  font-family: "Inter", sans-serif;
-  background: var(--black);
-  color: var(--text);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--black);
+    color: var(--white);
+    margin: 0;
+    padding: 0;
 }
 
 .hidden { display: none !important; }
 
-/* INPUTS & FORM */
-input, select, textarea {
-  width: 100%;
-  padding: 10px;
-  background: var(--black-soft);
-  color: var(--text);
-  border: 1px solid #333;
-  border-radius: var(--radius);
-  outline: none;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--gold);
+/* ------------------------ */
+/* LOGIN PAGE */
+/* ------------------------ */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-label {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--text-soft);
+.auth-box {
+    background: var(--gray);
+    padding: 40px;
+    width: 360px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
 }
 
-textarea {
-  min-height: 90px;
+.logo {
+    font-size: 40px;
+    font-weight: 900;
 }
 
-/* CARDS */
-.card {
-  background: var(--black-soft);
-  padding: 24px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+.logo span {
+    color: var(--gold);
 }
 
-/* LOGIN */
-.login-panel {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-card {
-  width: 380px;
-  text-align: center;
-}
-
-.brand {
-  font-size: 42px;
-  font-weight: 800;
-  color: var(--gold);
-}
 .subtitle {
-  margin-bottom: 20px;
-  color: var(--text-soft);
+    margin-top: -10px;
+    margin-bottom: 25px;
+    font-weight: 300;
+    color: var(--gold);
 }
 
+/* ------------------------ */
+/* FORM ELEMENTS */
+/* ------------------------ */
+.field {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--gold);
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--gray-light);
+    color: var(--white);
+    outline: none;
+    transition: var(--transition);
+}
+
+input:focus, select:focus {
+    background: #3a3a3a;
+}
+
+.feedback {
+    margin-top: 8px;
+    height: 18px;
+    color: var(--gold-light);
+}
+
+/* ------------------------ */
 /* BUTTONS */
-.btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 12px;
-  font-size: 15px;
+/* ------------------------ */
+.btn-gold {
+    background: var(--gold);
+    padding: 12px 18px;
+    border: none;
+    color: var(--black);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: bold;
+    transition: var(--transition);
 }
 
-.btn-primary {
-  background: var(--gold);
-  color: #000;
-}
-.btn-primary:hover {
-  background: var(--gold-light);
+.btn-gold:hover {
+    background: var(--gold-light);
 }
 
-.btn-secondary {
-  background: #333;
-  color: var(--text);
-}
-.btn-secondary:hover {
-  background: #444;
-}
-
-.btn-danger {
-  background: #8a2b2b;
-  color: #fff;
-}
-.btn-danger:hover {
-  background: #a83c3c;
+.btn-black {
+    background: var(--gray-light);
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--gold);
+    transition: var(--transition);
 }
 
-/* TOPBAR */
+.btn-black:hover {
+    background: #3a3a3a;
+}
+
+.w-full {
+    width: 100%;
+}
+
+/* ------------------------ */
+/* DASHBOARD */
+/* ------------------------ */
+.dashboard {
+    padding: 0;
+}
+
 .topbar {
-  background: var(--black-soft);
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow);
-}
-.topbar .user-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.user-role {
-  padding: 3px 8px;
-  background: var(--gold);
-  color: #000;
-  border-radius: 6px;
-  font-size: 13px;
+    background: var(--gray-light);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
 }
 
-/* CONTENT */
+.topbar-title {
+    margin: 0;
+    font-size: 24px;
+    color: var(--gold);
+}
+
 .content {
-  padding: 24px;
+    padding: 20px;
 }
 
-/* TABLE */
-.table-wrapper {
-  overflow-x: auto;
-  margin-top: 18px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-thead {
-  background: var(--black-soft);
-}
-th, td {
-  padding: 12px;
-  border-bottom: 1px solid #333;
-}
-tbody tr:hover {
-  background: #151515;
-}
-.actions button {
-  margin-right: 8px;
-}
-
-/* FORM */
-.form-card {
-  max-width: 750px;
-  margin: 0 auto;
+.card {
+    background: var(--gray);
+    padding: 25px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 25px;
 }
 
 .grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
 }
 
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
+/* ------------------------ */
+/* SEARCH */
+/* ------------------------ */
+.search-row {
+    display: flex;
+    gap: 10px;
 }
 
+/* ------------------------ */
+/* TABLE */
+/* ------------------------ */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: var(--gray-light);
+}
+
+th {
+    text-align: left;
+    padding: 12px;
+    color: var(--gold-light);
+    font-weight: 600;
+}
+
+td {
+    padding: 12px;
+    border-top: 1px solid #333;
+}
+
+tr:hover {
+    background: #242424;
+}
+
+/* ------------------------ */
 /* RESPONSIVE */
-@media (max-width: 700px) {
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
+/* ------------------------ */
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-box {
+        width: 90%;
+    }
 }
