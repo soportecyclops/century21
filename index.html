@@ -1,160 +1,130 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CRM C21 | Panel de Clientes</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C21 CRM — Gestión de Clientes</title>
+    <link rel="stylesheet" href="styles.css">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="styles.css" />
-
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.27.0/dist/umd/supabase.min.js"></script>
+    <!-- SUPABASE CDN v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 
 <body>
-  <!-- LOGIN PANEL -->
-  <main class="login-panel" id="login-panel">
-    <div class="card login-card">
-      <h1 class="brand">C21 CRM</h1>
-      <h2 class="subtitle">Acceso al Panel</h2>
 
-      <form id="login-form">
-        <div class="form-group">
-          <label>Email</label>
-          <input id="email" type="email" placeholder="tu@email.com" autocomplete="email">
+    <!-- LOGIN VIEW -->
+    <section id="login-view" class="auth-container hidden">
+        <div class="auth-box">
+            <h2 class="logo">CENTURY <span>21</span></h2>
+            <h3 class="subtitle">Panel de Gestión</h3>
+
+            <form id="login-form">
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" id="login-email" autocomplete="email" required>
+                </div>
+
+                <div class="field">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-password" autocomplete="current-password" required>
+                </div>
+
+                <button class="btn-gold" type="submit">Ingresar</button>
+                <p class="feedback" id="login-feedback"></p>
+            </form>
         </div>
-        <div class="form-group">
-          <label>Contraseña</label>
-          <input id="password" type="password" autocomplete="current-password">
-        </div>
+    </section>
 
-        <button class="btn btn-primary" type="submit">Ingresar</button>
-        <button class="btn btn-secondary" type="button" id="btn-signup">Crear Cuenta</button>
-      </form>
-    </div>
-  </main>
+    <!-- DASHBOARD VIEW -->
+    <section id="dashboard-view" class="dashboard hidden">
+        <header class="topbar">
+            <h1 class="topbar-title">CRM de Clientes</h1>
+            <button id="btn-logout" class="btn-black">Cerrar Sesión</button>
+        </header>
 
+        <main class="content">
 
-  <!-- DASHBOARD -->
-  <main id="panel" class="hidden">
-    <header class="topbar">
-      <div class="left">
-        <h1 class="panel-title">Panel de Clientes</h1>
-      </div>
+            <!-- Formulario -->
+            <section class="card">
+                <h2>Agregar / Editar Cliente</h2>
 
-      <div class="right user-info">
-        <span class="user-name" id="user-welcome"></span>
-        <span class="user-role" id="user-role"></span>
-        <button class="btn btn-danger" id="btn-logout">Cerrar sesión</button>
-      </div>
-    </header>
+                <form id="client-form">
+                    <input type="hidden" id="client-id">
 
-    <div class="content">
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>Nombre</label>
+                            <input type="text" id="nombre" required>
+                        </div>
 
-      <!-- LISTA -->
-      <section id="list-section">
-        <div class="toolbar">
-          <input id="q" type="text" placeholder="Buscar cliente por nombre, email o celular…">
-          <button id="btn-new" class="btn btn-primary">+ Nuevo Cliente</button>
-        </div>
+                        <div class="field">
+                            <label>Email</label>
+                            <input type="email" id="email" required>
+                        </div>
 
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Contacto</th>
-                <th>Estado</th>
-                <th>Presupuesto</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="clients-tbody"></tbody>
-          </table>
-        </div>
-      </section>
+                        <div class="field">
+                            <label>Celular</label>
+                            <input type="text" id="celular" required>
+                        </div>
 
+                        <div class="field">
+                            <label>Empresa</label>
+                            <input type="text" id="empresa">
+                        </div>
 
-      <!-- FORMULARIO -->
-      <section id="form-section" class="hidden">
-        <div class="card form-card">
+                        <div class="field">
+                            <label>Estado</label>
+                            <select id="estado">
+                                <option value="nuevo">Nuevo</option>
+                                <option value="contactado">Contactado</option>
+                                <option value="seguimiento">Seguimiento</option>
+                                <option value="cerrado">Cerrado</option>
+                            </select>
+                        </div>
 
-          <h2 id="form-title">Nuevo Cliente</h2>
+                        <div class="field">
+                            <label>Interés</label>
+                            <input type="text" id="interes">
+                        </div>
+                    </div>
 
-          <form id="client-form">
-            <input type="hidden" id="client-id">
+                    <button class="btn-gold w-full" type="submit">Guardar Cliente</button>
+                    <p class="feedback" id="form-feedback"></p>
+                </form>
+            </section>
 
-            <div class="grid-2">
-              <div class="form-group">
-                <label>Nombre</label>
-                <input id="c-nombre">
-              </div>
+            <!-- Buscador -->
+            <section class="card">
+                <div class="search-row">
+                    <input id="search" type="text" placeholder="Buscar cliente...">
+                    <button id="btn-refresh" class="btn-black">Actualizar</button>
+                </div>
+            </section>
 
-              <div class="form-group">
-                <label>Apellido</label>
-                <input id="c-apellido">
-              </div>
-            </div>
+            <!-- Tabla -->
+            <section class="card">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Celular</th>
+                                <th>Empresa</th>
+                                <th>Estado</th>
+                                <th>Interés</th>
+                                <th></th>
+                            </tr>
+                        </thead>
 
-            <div class="grid-2">
-              <div class="form-group">
-                <label>Email</label>
-                <input id="c-email" type="email">
-              </div>
+                        <tbody id="client-list"></tbody>
+                    </table>
+                </div>
+            </section>
 
-              <div class="form-group">
-                <label>Celular</label>
-                <input id="c-celular">
-              </div>
-            </div>
+        </main>
+    </section>
 
-            <div class="form-group">
-              <label>Instagram</label>
-              <input id="c-instagram">
-            </div>
-
-            <div class="form-group">
-              <label>Estado</label>
-              <select id="c-estado">
-                <option value="">-</option>
-                <option value="Nuevo">Nuevo</option>
-                <option value="Contactado">Contactado</option>
-                <option value="En Seguimiento">En Seguimiento</option>
-                <option value="Cerrado">Cerrado</option>
-              </select>
-            </div>
-
-            <div class="grid-2">
-              <div class="form-group">
-                <label>Presupuesto compra</label>
-                <input id="c-presupuesto_compra" type="number">
-              </div>
-
-              <div class="form-group">
-                <label>Zona de búsqueda</label>
-                <input id="c-zona_busqueda">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Observaciones</label>
-              <textarea id="c-observaciones"></textarea>
-            </div>
-
-            <div class="form-actions">
-              <button class="btn btn-primary">Guardar</button>
-              <button type="button" class="btn btn-secondary" id="btn-cancel">Cancelar</button>
-              <button type="button" class="btn btn-danger hidden" id="btn-delete">Eliminar</button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <!-- JS -->
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
