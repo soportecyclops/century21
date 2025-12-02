@@ -1,289 +1,201 @@
-// === CONFIG SUPABASE ===
+// ===============================
+// CONFIG SUPABASE
+// ===============================
 const SUPABASE_URL = "https://kliecdqosksoilbwgbxx.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsaWVjZHFvc2tzb2lsYndnYnh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2NjE3NjIsImV4cCI6MjA4MDIzNzc2Mn0.kLcGwhxDxCFw1865dvKuG7jUulWMd3WJI1de5W2kEOE";
 
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// =======================================
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Helpers
+const qs = (sel) => document.querySelector(sel);
+const qsa = (sel) => document.querySelectorAll(sel);
 
-// SELECTORS
-const loginForm = document.getElementById('login-form');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const btnSignup = document.getElementById('btn-signup');
-const btnSignout = document.getElementById('btn-signout');
+// Vistas
+const loginView = qs("#login-view");
+const dashboardView = qs("#dashboard-view");
 
-const panel = document.getElementById('panel');
-const userWelcome = document.getElementById('user-welcome');
-const userRoleEl = document.getElementById('user-role');
-const btnLogout = document.getElementById('btn-logout');
-const clientsTbody = document.getElementById('clients-tbody');
-const q = document.getElementById('q');
+// Inputs
+const loginForm = qs("#login-form");
+const loginFeedback = qs("#login-feedback");
 
-const formSection = document.getElementById('form-section');
-const listSection = document.getElementById('list-section');
-const btnNew = document.getElementById('btn-new');
-const clientForm = document.getElementById('client-form');
-const btnCancel = document.getElementById('btn-cancel');
-const btnDelete = document.getElementById('btn-delete');
+// Client form
+const clientForm = qs("#client-form");
+const formFeedback = qs("#form-feedback");
 
-let currentUser = null;
-let currentProfile = null;
+const clientList = qs("#client-list");
+const searchInput = qs("#search");
 
+// ===============================
+// SESIÓN
+// ===============================
+async function checkSession() {
+    const { data } = await supabase.auth.getSession();
 
-// LOGIN ----------------------------------------------------
-async function handleLogin(e) {
-  e.preventDefault();
-
-  const { error } = await client.auth.signInWithPassword({
-    email: emailInput.value,
-    password: passwordInput.value
-  });
-
-  if (error) return alert(error.message);
-  loadUserAndShowPanel();
+    if (data?.session) {
+        showDashboard();
+    } else {
+        showLogin();
+    }
 }
 
-async function handleSignup() {
-  if (!emailInput.value || !passwordInput.value)
-    return alert("Completa email y contraseña");
-
-  const { error } = await client.auth.signUp({
-    email: emailInput.value,
-    password: passwordInput.value
-  });
-
-  if (error) return alert(error.message);
-
-  alert("Cuenta creada. Revisa tu email.");
+function showLogin() {
+    loginView.classList.remove("hidden");
+    dashboardView.classList.add("hidden");
 }
 
-async function handleLogout() {
-  await client.auth.signOut();
-  currentUser = null;
-  currentProfile = null;
-
-  panel.style.display = "none";
-  document.querySelector(".login-panel").style.display = "block";
+function showDashboard() {
+    loginView.classList.add("hidden");
+    dashboardView.classList.remove("hidden");
+    loadClients();
 }
 
+// ===============================
+// LOGIN
+// ===============================
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-// LOAD PROFILE + PANEL -------------------------------------
-async function loadUserAndShowPanel() {
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) return;
+    const email = qs("#login-email").value.trim();
+    const password = qs("#login-password").value.trim();
 
-  currentUser = user;
+    loginFeedback.textContent = "Procesando...";
 
-  const { data: profile } = await client
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (!profile) {
-    await client.from("profiles").upsert({
-      id: user.id,
-      full_name: user.email,
-      role: "user"
-    });
+    if (error) {
+        loginFeedback.textContent = "Credenciales incorrectas.";
+        return;
+    }
 
-    currentProfile = { full_name: user.email, role: "user" };
-  } else {
-    currentProfile = profile;
-  }
+    loginFeedback.textContent = "";
+    showDashboard();
+});
 
-  userWelcome.textContent = currentProfile.full_name;
-  userRoleEl.textContent = currentProfile.role;
+// LOGOUT
+qs("#btn-logout").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    showLogin();
+});
 
-  document.querySelector(".login-panel").style.display = "none";
-  panel.style.display = "block";
-  btnSignout.classList.remove("hidden");
-
-  loadClients();
-}
-
-
-// CHECK SESSION ON PAGE LOAD
-(async () => {
-  const { data } = await client.auth.getSession();
-  if (data.session) loadUserAndShowPanel();
-})();
-
-
-// LOAD CLIENTS --------------------------------------------
+// ===============================
+// CRUD
+// ===============================
 async function loadClients() {
-  clientsTbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+    clientList.innerHTML = `<tr><td colspan="7">Cargando...</td></tr>`;
 
-  const search = q.value || "";
+    const searchTerm = searchInput.value.trim();
 
-  let query = client.from("clients").select("*");
+    let query = supabase.from("clients").select("*").order("nombre", { ascending: true });
 
-  if (search) {
-    query = query
-      .or(`nombre.ilike.%${search}%,email.ilike.%${search}%,celular.ilike.%${search}%`);
-  }
+    if (searchTerm) {
+        query = query.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,celular.ilike.%${searchTerm}%`);
+    }
 
-  const { data, error } = await query
-    .order("created_at", { ascending: false })
-    .limit(200);
+    const { data, error } = await query;
 
-  if (error) return console.error(error);
+    if (error) {
+        clientList.innerHTML = `<tr><td colspan="7">Error cargando datos</td></tr>`;
+        return;
+    }
 
-  clientsTbody.innerHTML = "";
-
-  if (!data.length) {
-    clientsTbody.innerHTML = '<tr><td colspan="5">No hay registros</td></tr>';
-    return;
-  }
-
-  data.forEach(c => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${c.nombre || ""} ${c.apellido || ""}</td>
-      <td>${c.email || c.celular || c.instagram || ""}</td>
-      <td>${c.estado || ""}</td>
-      <td>${c.presupuesto_compra || ""}</td>
-      <td class="actions">
-        <button data-id="${c.id}" class="btn-edit">Editar</button>
-        <button data-id="${c.id}" class="btn-delete">Eliminar</button>
-      </td>
-    `;
-
-    clientsTbody.appendChild(tr);
-  });
-
-  document.querySelectorAll(".btn-edit").forEach(btn =>
-    btn.addEventListener("click", onEditClick)
-  );
-
-  document.querySelectorAll(".btn-delete").forEach(btn =>
-    btn.addEventListener("click", onDeleteClick)
-  );
+    renderClients(data);
 }
 
-q.addEventListener("input", loadClients);
+function renderClients(rows) {
+    if (!rows.length) {
+        clientList.innerHTML = `<tr><td colspan="7">Sin resultados</td></tr>`;
+        return;
+    }
 
-
-// FORM -----------------------------------------------------
-btnNew.addEventListener("click", () => openForm());
-btnCancel.addEventListener("click", closeForm);
-
-function openForm(client = null) {
-  listSection.classList.add("hidden");
-  formSection.classList.remove("hidden");
-
-  btnDelete.classList.toggle("hidden", !client);
-
-  document.getElementById("form-title").textContent =
-    client ? "Editar cliente" : "Nuevo cliente";
-
-  clientForm.reset();
-  document.getElementById("client-id").value = client?.id || "";
-
-  if (client) {
-    Object.keys(client).forEach(key => {
-      const field = document.getElementById(`c-${key}`);
-      if (field) field.value = client[key] ?? "";
-    });
-  }
+    clientList.innerHTML = rows
+        .map(
+            (c) => `
+        <tr>
+            <td>${c.nombre}</td>
+            <td>${c.email}</td>
+            <td>${c.celular}</td>
+            <td>${c.empresa ?? ""}</td>
+            <td>${c.estado ?? ""}</td>
+            <td>${c.interes ?? ""}</td>
+            <td>
+                <button class="btn-black" onclick="editClient('${c.id}')">Editar</button>
+                <button class="btn-black" onclick="deleteClient('${c.id}')">Eliminar</button>
+            </td>
+        </tr>`
+        )
+        .join("");
 }
 
-function closeForm() {
-  formSection.classList.add("hidden");
-  listSection.classList.remove("hidden");
+// ===============================
+// EDITAR
+// ===============================
+function editClient(id) {
+    supabase
+        .from("clients")
+        .select("*")
+        .eq("id", id)
+        .single()
+        .then(({ data }) => {
+            qs("#client-id").value = data.id;
+            qs("#nombre").value = data.nombre;
+            qs("#email").value = data.email;
+            qs("#celular").value = data.celular;
+            qs("#empresa").value = data.empresa ?? "";
+            qs("#estado").value = data.estado ?? "nuevo";
+            qs("#interes").value = data.interes ?? "";
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
 }
 
-async function onEditClick(e) {
-  const id = e.target.dataset.id;
+// ===============================
+// GUARDAR
+// ===============================
+clientForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const { data, error } = await client
-    .from("clients")
-    .select("*")
-    .eq("id", id)
-    .single();
+    const clientData = {
+        nombre: qs("#nombre").value,
+        email: qs("#email").value,
+        celular: qs("#celular").value,
+        empresa: qs("#empresa").value,
+        estado: qs("#estado").value,
+        interes: qs("#interes").value,
+    };
 
-  if (error) return alert("Error cargando registro");
+    const id = qs("#client-id").value;
 
-  openForm(data);
-}
+    let response;
 
-async function onDeleteClick(e) {
-  if (!confirm("Eliminar?")) return;
+    if (id) {
+        response = await supabase.from("clients").update(clientData).eq("id", id);
+    } else {
+        response = await supabase.from("clients").insert(clientData);
+    }
 
-  const id = e.target.dataset.id;
+    if (response.error) {
+        formFeedback.textContent = "Error guardando datos";
+        return;
+    }
 
-  const { error } = await client
-    .from("clients")
-    .delete()
-    .eq("id", id);
-
-  if (error) return alert(error.message);
-
-  loadClients();
-}
-
-clientForm.addEventListener("submit", async ev => {
-  ev.preventDefault();
-
-  const id = document.getElementById("client-id").value;
-
-  const payload = {
-    user_id: currentUser.id,
-    nombre: c("nombre"),
-    apellido: c("apellido"),
-    instagram: c("instagram"),
-    celular: c("celular"),
-    email: c("email"),
-    fecha_alta: c("fecha_alta") || null,
-    tipo_contacto: c("tipo_contacto"),
-    tipo_cliente: c("tipo_cliente"),
-    direccion: c("direccion"),
-    localidad: c("localidad"),
-    partido: c("partido"),
-    fecha_proximo_contacto: c("fecha_proximo_contacto") || null,
-    estado: c("estado"),
-    origen: c("origen"),
-    necesita_vender: c("necesita_vender") === "true",
-    presupuesto_compra: c("presupuesto_compra") || null,
-    zona_busqueda: c("zona_busqueda"),
-    observaciones: c("observaciones")
-  };
-
-  let response;
-
-  if (id) {
-    response = await client.from("clients").update(payload).eq("id", id);
-  } else {
-    response = await client.from("clients").insert(payload);
-  }
-
-  if (response.error) return alert(response.error.message);
-
-  closeForm();
-  loadClients();
+    formFeedback.textContent = "Guardado correctamente";
+    clientForm.reset();
+    loadClients();
 });
 
-
-btnDelete.addEventListener("click", async () => {
-  const id = document.getElementById("client-id").value;
-
-  if (!confirm("¿Eliminar este cliente?")) return;
-
-  const { error } = await client
-    .from("clients")
-    .delete()
-    .eq("id", id);
-
-  if (error) return alert(error.message);
-
-  closeForm();
-  loadClients();
-});
-
-
-// Helper
-function c(id) {
-  return document.getElementById(`c-${id}`).value;
+// ===============================
+// ELIMINAR
+// ===============================
+async function deleteClient(id) {
+    await supabase.from("clients").delete().eq("id", id);
+    loadClients();
 }
+
+// ===============================
+// BUSCADOR
+// ===============================
+searchInput.addEventListener("input", loadClients);
+qs("#btn-refresh").addEventListener("click", loadClients);
+
+// Initialize
+checkSession();
