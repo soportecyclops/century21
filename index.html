@@ -3,110 +3,184 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Cyclops CRM</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Cyclops CRM — Century21</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Meta -->
+  <meta name="description" content="Panel privado Cyclops CRM — gestión de potenciales clientes (estilo Century21)">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="logo">
-        <div class="mark">C21</div>
-        <div>
+  <div class="app">
+
+    <header class="site-header card">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">C21</div>
+        <div class="brand-info">
           <h1>Cyclops CRM</h1>
           <div class="muted">Panel privado de gestión de potenciales clientes</div>
         </div>
       </div>
+
+      <div class="header-actions">
+        <div id="session-status" class="muted" aria-live="polite">No autenticado</div>
+        <div class="header-buttons">
+          <button id="btn-signup" class="btn btn-secondary" type="button">Crear cuenta</button>
+          <button id="btn-logout" class="btn btn-ghost hidden" type="button">Cerrar sesión</button>
+        </div>
+      </div>
     </header>
 
-    <main class="card login-wrap">
-      <section class="login-panel">
-        <h2>Iniciar sesión</h2>
+    <main class="container">
+      <!-- LOGIN CARD -->
+      <section id="login-card" class="card login-card" aria-labelledby="login-title">
+        <h2 id="login-title">Iniciar sesión</h2>
         <p class="muted">Acceso seguro. Solo usuarios autorizados.</p>
-        <form id="login-form">
-          <label>Email</label>
-          <input id="email" type="email" required placeholder="tu@correo.com">
-          <label>Contraseña</label>
-          <input id="password" type="password" required placeholder="********">
-          <div class="login-buttons">
-            <button type="submit">Entrar</button>
-            <button type="button" id="btn-signup">Crear cuenta</button>
-            <button type="button" id="btn-signout" class="hidden">Cerrar sesión</button>
+
+        <form id="login-form" class="form" autocomplete="on" novalidate>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="tu@correo.com">
+
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="********">
+
+          <div class="form-row">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <button type="button" id="btn-demo" class="btn btn-ghost">Demo</button>
           </div>
+
+          <div id="login-message" role="status" class="muted small"></div>
         </form>
       </section>
 
-      <section id="panel" class="card">
-        <div class="topbar">
-          <div>
-            <strong id="user-welcome">Usuario</strong>
-            <div class="muted" id="user-role">role</div>
-          </div>
-          <div>
-            <button id="btn-new">Nuevo cliente</button>
-            <button id="btn-logout">Salir</button>
-          </div>
-        </div>
+      <!-- PANEL (invisible until login) -->
+      <section id="panel" class="card panel-card hidden" aria-hidden="true">
 
-        <div id="list-section">
-          <input id="q" placeholder="Buscar por nombre, email o celular" class="search">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Contacto</th>
-                <th>Estado</th>
-                <th>Presupuesto</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="clients-tbody"></tbody>
-          </table>
-        </div>
-
-        <div id="form-section" class="hidden">
-          <h3 id="form-title">Nuevo cliente</h3>
-          <form id="client-form">
-            <input type="hidden" id="client-id">
-
-            <label>Nombre</label><input id="c-nombre" required>
-            <label>Apellido</label><input id="c-apellido">
-            <label>Instagram</label><input id="c-instagram">
-            <label>Celular</label><input id="c-celular">
-            <label>Email</label><input id="c-email" type="email">
-            <label>Fecha alta</label><input id="c-fecha_alta" type="date">
-            <label>Tipo contacto</label><input id="c-tipo_contacto">
-            <label>Tipo cliente</label><input id="c-tipo_cliente">
-            <label>Direccion</label><input id="c-direccion">
-            <label>Localidad</label><input id="c-localidad">
-            <label>Partido</label><input id="c-partido">
-            <label>Fecha próximo contacto</label><input id="c-fecha_proximo_contacto" type="date">
-            <label>Estado</label><input id="c-estado">
-            <label>Origen</label><input id="c-origen">
-            <label>Necesita vender</label>
-            <select id="c-necesita_vender">
-              <option value="false">No</option>
-              <option value="true">Sí</option>
-            </select>
-            <label>Presupuesto compra</label><input id="c-presupuesto_compra" type="number" step="0.01">
-            <label>Zona búsqueda</label><input id="c-zona_busqueda">
-            <label>Observaciones</label><textarea id="c-observaciones"></textarea>
-
-            <div class="form-buttons">
-              <button type="submit">Guardar</button>
-              <button type="button" id="btn-cancel">Cancelar</button>
-              <button type="button" id="btn-delete" class="hidden">Eliminar</button>
+        <div class="panel-top topbar">
+          <div class="top-left">
+            <div>
+              <strong id="user-welcome">Usuario</strong>
+              <div class="muted" id="user-role">role</div>
             </div>
-          </form>
+          </div>
+
+          <div class="top-right">
+            <button id="btn-new" class="btn btn-primary">Nuevo cliente</button>
+            <input id="q" class="search" placeholder="Buscar por nombre, email o celular" aria-label="Buscar clientes">
+          </div>
         </div>
 
-      </section>
+        <div class="panel-body">
+          <div id="list-section" class="list-section">
+            <div class="table-wrap">
+              <table aria-label="Lista de clientes" role="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Contacto</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Presupuesto</th>
+                    <th scope="col">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="clients-tbody">
+                  <tr><td colspan="5">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="form-section" class="form-section hidden" aria-hidden="true">
+            <h3 id="form-title">Nuevo cliente</h3>
+
+            <form id="client-form" class="form two-columns" novalidate>
+              <input type="hidden" id="client-id" name="client-id">
+
+              <label for="c-nombre">Nombre *</label>
+              <input id="c-nombre" name="c-nombre" required>
+
+              <label for="c-apellido">Apellido</label>
+              <input id="c-apellido" name="c-apellido">
+
+              <label for="c-instagram">Instagram</label>
+              <input id="c-instagram" name="c-instagram">
+
+              <label for="c-celular">Celular</label>
+              <input id="c-celular" name="c-celular">
+
+              <label for="c-email">Email</label>
+              <input id="c-email" name="c-email" type="email">
+
+              <label for="c-fecha_alta">Fecha alta</label>
+              <input id="c-fecha_alta" name="c-fecha_alta" type="date">
+
+              <label for="c-tipo_contacto">Tipo contacto</label>
+              <input id="c-tipo_contacto" name="c-tipo_contacto">
+
+              <label for="c-tipo_cliente">Tipo cliente</label>
+              <input id="c-tipo_cliente" name="c-tipo_cliente">
+
+              <label for="c-direccion">Dirección</label>
+              <input id="c-direccion" name="c-direccion">
+
+              <label for="c-localidad">Localidad</label>
+              <input id="c-localidad" name="c-localidad">
+
+              <label for="c-partido">Partido</label>
+              <input id="c-partido" name="c-partido">
+
+              <label for="c-fecha_proximo_contacto">Fecha próximo contacto</label>
+              <input id="c-fecha_proximo_contacto" name="c-fecha_proximo_contacto" type="date">
+
+              <label for="c-estado">Estado</label>
+              <input id="c-estado" name="c-estado">
+
+              <label for="c-origen">Origen</label>
+              <input id="c-origen" name="c-origen">
+
+              <label for="c-necesita_vender">Necesita vender</label>
+              <select id="c-necesita_vender" name="c-necesita_vender">
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+
+              <label for="c-presupuesto_compra">Presupuesto compra</label>
+              <input id="c-presupuesto_compra" name="c-presupuesto_compra" type="number" step="0.01" min="0">
+
+              <label for="c-zona_busqueda">Zona búsqueda</label>
+              <input id="c-zona_busqueda" name="c-zona_busqueda">
+
+              <label for="c-observaciones" class="full">Observaciones</label>
+              <textarea id="c-observaciones" name="c-observaciones" class="full" rows="4"></textarea>
+
+              <div class="form-buttons full">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="button" id="btn-cancel" class="btn btn-ghost">Cancelar</button>
+                <button type="button" id="btn-delete" class="btn btn-danger hidden">Eliminar</button>
+              </div>
+            </form>
+          </div> <!-- form-section -->
+
+        </div> <!-- panel-body -->
+      </section> <!-- panel -->
+
     </main>
+
+    <footer class="site-footer muted small">
+      © <span id="year"></span> Cyclops CRM — Diseño Century21 • Privado
+    </footer>
   </div>
 
+  <!-- Supabase (UMD) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.27.0/dist/umd/supabase.min.js"></script>
-  <script src="app.js"></script>
+
+  <!-- App -->
+  <script src="app.js" defer></script>
 </body>
 </html>
