@@ -7,16 +7,13 @@
     <link rel="stylesheet" href="styles.css">
 
     <!-- SUPABASE CDN v2 -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-    <!-- APP -->
-    <script defer src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 
 <body>
 
-    <!-- LOGIN VIEW -->
-    <section id="login-view" class="auth-container hidden">
+    <!-- LOGIN -->
+    <section id="login-view" class="auth-container">
         <div class="auth-box">
             <h2 class="logo">CENTURY <span>21</span></h2>
             <h3 class="subtitle">Panel de Gestión</h3>
@@ -24,12 +21,12 @@
             <form id="login-form">
                 <div class="field">
                     <label>Email</label>
-                    <input type="email" id="login-email" autocomplete="email" required>
+                    <input type="email" id="login-email" required />
                 </div>
 
                 <div class="field">
                     <label>Contraseña</label>
-                    <input type="password" id="login-password" autocomplete="current-password" required>
+                    <input type="password" id="login-password" required />
                 </div>
 
                 <button class="btn-gold" type="submit">Ingresar</button>
@@ -38,10 +35,11 @@
         </div>
     </section>
 
-    <!-- DASHBOARD VIEW -->
+    <!-- DASHBOARD -->
     <section id="dashboard-view" class="dashboard hidden">
         <header class="topbar">
             <h1 class="topbar-title">CRM de Clientes</h1>
+            <div id="role-badge" class="badge"></div>
             <button id="btn-logout" class="btn-black">Cerrar Sesión</button>
         </header>
 
@@ -55,29 +53,40 @@
                     <input type="hidden" id="client-id">
 
                     <div class="grid-2">
+
                         <div class="field">
                             <label>Nombre</label>
-                            <input type="text" id="nombre" required>
+                            <input type="text" id="first_name" required />
+                        </div>
+
+                        <div class="field">
+                            <label>Apellido</label>
+                            <input type="text" id="last_name" required />
                         </div>
 
                         <div class="field">
                             <label>Email</label>
-                            <input type="email" id="email" required>
+                            <input type="email" id="email" />
                         </div>
 
                         <div class="field">
-                            <label>Celular</label>
-                            <input type="text" id="celular" required>
+                            <label>Teléfono</label>
+                            <input type="text" id="phone" />
                         </div>
 
                         <div class="field">
-                            <label>Empresa</label>
-                            <input type="text" id="empresa">
+                            <label>Localidad</label>
+                            <input type="text" id="locality" />
+                        </div>
+
+                        <div class="field">
+                            <label>Distrito</label>
+                            <input type="text" id="district" />
                         </div>
 
                         <div class="field">
                             <label>Estado</label>
-                            <select id="estado">
+                            <select id="status">
                                 <option value="nuevo">Nuevo</option>
                                 <option value="contactado">Contactado</option>
                                 <option value="seguimiento">Seguimiento</option>
@@ -86,9 +95,10 @@
                         </div>
 
                         <div class="field">
-                            <label>Interés</label>
-                            <input type="text" id="interes">
+                            <label>Notas</label>
+                            <input type="text" id="notes" />
                         </div>
+
                     </div>
 
                     <button class="btn-gold w-full" type="submit">Guardar Cliente</button>
@@ -112,10 +122,11 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Email</th>
-                                <th>Celular</th>
-                                <th>Empresa</th>
+                                <th>Teléfono</th>
+                                <th>Localidad</th>
+                                <th>Distrito</th>
                                 <th>Estado</th>
-                                <th>Interés</th>
+                                <th>Notas</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -128,5 +139,6 @@
         </main>
     </section>
 
+    <script src="app.js"></script>
 </body>
 </html>
