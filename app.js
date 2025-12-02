@@ -1,406 +1,289 @@
-/* app.js — Cyclops CRM (Century21 style)
-   - Requiere: supabase UMD (ver index.html)
-   - Reemplazar SUPABASE_URL y SUPABASE_ANON_KEY por los tuyos o cargarlos por env/config.
-*/
+// === CONFIG SUPABASE ===
+const SUPABASE_URL = "https://kliecdqosksoilbwgbxx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsaWVjZHFvc2tzb2lsYndnYnh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2NjE3NjIsImV4cCI6MjA4MDIzNzc2Mn0.kLcGwhxDxCFw1865dvKuG7jUulWMd3WJI1de5W2kEOE";
 
-/* ========== CONFIG ========== */
-/* Reemplaza aquí o carga desde un archivo seguro / env en producción */
-const SUPABASE_URL = 'REPLACE_WITH_SUPABASE_URL'; // ej: https://kliecdqosksoilbwgbxx.supabase.co
-const SUPABASE_ANON_KEY = 'REPLACE_WITH_SUPABASE_ANON_KEY';
-/* ============================ */
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// =======================================
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.warn('Supabase: URL o ANON key no configurados. Rellena SUPABASE_URL y SUPABASE_ANON_KEY en app.js');
-}
 
-/* Supabase client (UMD) */
-const supabaseClient = window.supabase && window.supabase.createClient
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+// SELECTORS
+const loginForm = document.getElementById('login-form');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const btnSignup = document.getElementById('btn-signup');
+const btnSignout = document.getElementById('btn-signout');
 
-if (!supabaseClient) {
-  console.error('Supabase client no disponible. ¿Incluiste el script CDN en index.html?');
-}
+const panel = document.getElementById('panel');
+const userWelcome = document.getElementById('user-welcome');
+const userRoleEl = document.getElementById('user-role');
+const btnLogout = document.getElementById('btn-logout');
+const clientsTbody = document.getElementById('clients-tbody');
+const q = document.getElementById('q');
 
-/* ========== HELPERS ========== */
-const qs = (sel, root = document) => root.querySelector(sel);
-const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-const el = id => document.getElementById(id);
-const show = (node) => node.classList.remove('hidden');
-const hide = (node) => node.classList.add('hidden');
+const formSection = document.getElementById('form-section');
+const listSection = document.getElementById('list-section');
+const btnNew = document.getElementById('btn-new');
+const clientForm = document.getElementById('client-form');
+const btnCancel = document.getElementById('btn-cancel');
+const btnDelete = document.getElementById('btn-delete');
 
-function notify(msg, type = 'info') {
-  // simple inline notification for login form area or session status
-  const status = qs('#login-message');
-  if (status) {
-    status.textContent = msg;
-    status.className = 'muted small ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
-    setTimeout(() => { status.textContent = ''; }, 4000);
-  }
-  const sessionStatus = el('session-status');
-  if (sessionStatus) sessionStatus.textContent = msg;
-}
-
-/* ========== SELECTORS ========== */
-const loginForm = el('login-form');
-const emailInput = el('email');
-const passwordInput = el('password');
-const btnSignup = el('btn-signup');
-const btnLogout = el('btn-logout');
-const btnDemo = el('btn-demo');
-
-const panel = el('panel');
-const loginCard = el('login-card');
-const userWelcome = el('user-welcome');
-const userRoleEl = el('user-role');
-
-const clientsTbody = el('clients-tbody');
-const q = el('q');
-const btnNew = el('btn-new');
-
-const formSection = el('form-section');
-const listSection = el('list-section');
-const clientForm = el('client-form');
-const btnCancel = el('btn-cancel');
-const btnDelete = el('btn-delete');
-const formTitle = el('form-title');
-const clientIdInput = el('client-id');
-
-const yearEl = el('year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-/* Current session/profile */
 let currentUser = null;
 let currentProfile = null;
 
-/* ========== AUTH FLOW ========== */
-async function onAuthChange(event, session) {
-  // called on sign in / sign out
-  if (session && session.user) {
-    currentUser = session.user;
-    await loadProfileAndShow();
-  } else {
-    currentUser = null;
-    currentProfile = null;
-    // UI
-    hide(panel);
-    show(loginCard);
-    hide(btnLogout);
-    el('session-status').textContent = 'No autenticado';
-  }
-}
 
-/* Initialize: check session, subscribe */
-(async () => {
-  if (!supabaseClient) return;
-  const { data } = await supabaseClient.auth.getSession();
-  if (data?.session) {
-    currentUser = data.session.user;
-    await loadProfileAndShow();
-  } else {
-    // show login
-    hide(panel);
-    show(loginCard);
-  }
-
-  // subscribe to auth changes
-  supabaseClient.auth.onAuthStateChange((event, session) => onAuthChange(event, session));
-})();
-
-async function loadProfileAndShow() {
-  if (!supabaseClient || !currentUser) return;
-  try {
-    // fetch profile
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('id', currentUser.id)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') {
-      // If not found, upsert default profile
-      console.warn('Profile load error (ignorable if not exists):', profileError.message || profileError);
-    }
-
-    if (!profile) {
-      // create minimal profile
-      const { error: upsertError } = await supabaseClient.from('profiles').upsert({
-        id: currentUser.id,
-        full_name: currentUser.email,
-        role: 'user'
-      });
-      if (upsertError) console.warn('Error creando profile por defecto:', upsertError.message);
-      currentProfile = { full_name: currentUser.email, role: 'user' };
-    } else {
-      currentProfile = profile;
-    }
-
-    // update UI
-    userWelcome.textContent = currentProfile.full_name || currentUser.email;
-    userRoleEl.textContent = currentProfile.role || 'user';
-
-    // show panel
-    hide(loginCard);
-    show(panel);
-    show(btnLogout);
-    el('session-status').textContent = `Conectado como ${currentProfile.full_name || currentUser.email}`;
-
-    // load clients
-    loadClients();
-  } catch (err) {
-    console.error('Error loadProfileAndShow', err);
-  }
-}
-
-/* ========== AUTH HANDLERS ========== */
-loginForm && loginForm.addEventListener('submit', async (e) => {
+// LOGIN ----------------------------------------------------
+async function handleLogin(e) {
   e.preventDefault();
-  if (!supabaseClient) return notify('Supabase no configurado', 'error');
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-  if (!email || !password) return notify('Completa email y contraseña', 'error');
 
-  try {
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) return notify(error.message, 'error');
-    notify('Autenticando...', 'success');
-    // onAuthChange will catch session and show panel
-  } catch (err) {
-    console.error(err);
-    notify('Error iniciando sesión', 'error');
-  }
-});
+  const { error } = await client.auth.signInWithPassword({
+    email: emailInput.value,
+    password: passwordInput.value
+  });
 
-btnSignup && btnSignup.addEventListener('click', async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-  if (!email || !password) return notify('Completa email y contraseña', 'error');
-
-  try {
-    const { error } = await supabaseClient.auth.signUp({ email, password });
-    if (error) return notify(error.message, 'error');
-    notify('Cuenta creada. Revisa tu email para confirmar.', 'success');
-  } catch (err) {
-    console.error(err);
-    notify('Error creando cuenta', 'error');
-  }
-});
-
-btnLogout && btnLogout.addEventListener('click', async () => {
-  if (!supabaseClient) return;
-  await supabaseClient.auth.signOut();
-  // onAuthChange will update UI
-});
-
-/* Demo button helper (no guarda datos en supabase) */
-btnDemo && btnDemo.addEventListener('click', () => {
-  emailInput.value = 'demo@demo.com';
-  passwordInput.value = 'demopass';
-  notify('Demo cargado en el formulario', 'info');
-});
-
-/* ========== CLIENTS CRUD ========== */
-
-/**
- * Helper to read client form fields safely
- * Usage: c('nombre') returns value or ''
- */
-function c(id) {
-  const node = el(`c-${id}`);
-  if (!node) return '';
-  if (node.type === 'checkbox') return node.checked;
-  return node.value ?? '';
+  if (error) return alert(error.message);
+  loadUserAndShowPanel();
 }
 
-async function loadClients() {
-  if (!supabaseClient) return;
-  clientsTbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+async function handleSignup() {
+  if (!emailInput.value || !passwordInput.value)
+    return alert("Completa email y contraseña");
 
-  const search = (q && q.value) ? q.value.trim() : '';
-  try {
-    let query = supabaseClient.from('clients').select('*');
+  const { error } = await client.auth.signUp({
+    email: emailInput.value,
+    password: passwordInput.value
+  });
 
-    if (search) {
-      // proper OR ilike for supabase: nombre.ilike.%search%,email.ilike.%search%,celular.ilike.%search%
-      const escaped = search.replace(/%/g, '\\%');
-      const orString = `nombre.ilike.%${escaped}%,email.ilike.%${escaped}%,celular.ilike.%${escaped}%`;
-      query = query.or(orString);
-    }
+  if (error) return alert(error.message);
 
-    // ordering (assumes created_at exists)
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(500);
+  alert("Cuenta creada. Revisa tu email.");
+}
 
-    if (error) {
-      console.error('Error cargando clients', error);
-      clientsTbody.innerHTML = `<tr><td colspan="5">Error cargando registros</td></tr>`;
-      return;
-    }
+async function handleLogout() {
+  await client.auth.signOut();
+  currentUser = null;
+  currentProfile = null;
 
-    if (!data || data.length === 0) {
-      clientsTbody.innerHTML = `<tr><td colspan="5">No hay registros</td></tr>`;
-      return;
-    }
+  panel.style.display = "none";
+  document.querySelector(".login-panel").style.display = "block";
+}
 
-    clientsTbody.innerHTML = '';
-    data.forEach(cItem => {
-      const tr = document.createElement('tr');
-      const nombre = `${cItem.nombre ?? ''} ${cItem.apellido ?? ''}`.trim();
-      const contacto = cItem.email || cItem.celular || cItem.instagram || '';
-      const estado = cItem.estado || '';
-      const presupuesto = cItem.presupuesto_compra ? Number(cItem.presupuesto_compra).toLocaleString() : '';
 
-      tr.innerHTML = `
-        <td>${escapeHtml(nombre)}</td>
-        <td>${escapeHtml(contacto)}</td>
-        <td>${escapeHtml(estado)}</td>
-        <td>${escapeHtml(presupuesto)}</td>
-        <td class="actions">
-          <button data-id="${cItem.id}" class="btn btn-secondary btn-edit">Editar</button>
-          <button data-id="${cItem.id}" class="btn btn-danger btn-delete">Eliminar</button>
-        </td>
-      `;
-      clientsTbody.appendChild(tr);
+// LOAD PROFILE + PANEL -------------------------------------
+async function loadUserAndShowPanel() {
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return;
+
+  currentUser = user;
+
+  const { data: profile } = await client
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) {
+    await client.from("profiles").upsert({
+      id: user.id,
+      full_name: user.email,
+      role: "user"
     });
 
-    // attach listeners
-    qsa('.btn-edit', clientsTbody).forEach(b => b.addEventListener('click', onEditClick));
-    qsa('.btn-delete', clientsTbody).forEach(b => b.addEventListener('click', onDeleteClick));
-  } catch (err) {
-    console.error('loadClients error', err);
-    clientsTbody.innerHTML = `<tr><td colspan="5">Error inesperado</td></tr>`;
+    currentProfile = { full_name: user.email, role: "user" };
+  } else {
+    currentProfile = profile;
   }
+
+  userWelcome.textContent = currentProfile.full_name;
+  userRoleEl.textContent = currentProfile.role;
+
+  document.querySelector(".login-panel").style.display = "none";
+  panel.style.display = "block";
+  btnSignout.classList.remove("hidden");
+
+  loadClients();
 }
 
-/* search debounce */
-let searchTimeout = null;
-q && q.addEventListener('input', () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(loadClients, 350);
-});
 
-/* open/close form */
-btnNew && btnNew.addEventListener('click', () => openForm());
-btnCancel && btnCancel.addEventListener('click', closeForm);
+// CHECK SESSION ON PAGE LOAD
+(async () => {
+  const { data } = await client.auth.getSession();
+  if (data.session) loadUserAndShowPanel();
+})();
+
+
+// LOAD CLIENTS --------------------------------------------
+async function loadClients() {
+  clientsTbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+  const search = q.value || "";
+
+  let query = client.from("clients").select("*");
+
+  if (search) {
+    query = query
+      .or(`nombre.ilike.%${search}%,email.ilike.%${search}%,celular.ilike.%${search}%`);
+  }
+
+  const { data, error } = await query
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) return console.error(error);
+
+  clientsTbody.innerHTML = "";
+
+  if (!data.length) {
+    clientsTbody.innerHTML = '<tr><td colspan="5">No hay registros</td></tr>';
+    return;
+  }
+
+  data.forEach(c => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${c.nombre || ""} ${c.apellido || ""}</td>
+      <td>${c.email || c.celular || c.instagram || ""}</td>
+      <td>${c.estado || ""}</td>
+      <td>${c.presupuesto_compra || ""}</td>
+      <td class="actions">
+        <button data-id="${c.id}" class="btn-edit">Editar</button>
+        <button data-id="${c.id}" class="btn-delete">Eliminar</button>
+      </td>
+    `;
+
+    clientsTbody.appendChild(tr);
+  });
+
+  document.querySelectorAll(".btn-edit").forEach(btn =>
+    btn.addEventListener("click", onEditClick)
+  );
+
+  document.querySelectorAll(".btn-delete").forEach(btn =>
+    btn.addEventListener("click", onDeleteClick)
+  );
+}
+
+q.addEventListener("input", loadClients);
+
+
+// FORM -----------------------------------------------------
+btnNew.addEventListener("click", () => openForm());
+btnCancel.addEventListener("click", closeForm);
 
 function openForm(client = null) {
-  listSection.classList.add('hidden');
-  formSection.classList.remove('hidden');
-  formSection.setAttribute('aria-hidden', 'false');
-  btnDelete.classList.toggle('hidden', !client);
-  formTitle.textContent = client ? 'Editar cliente' : 'Nuevo cliente';
+  listSection.classList.add("hidden");
+  formSection.classList.remove("hidden");
+
+  btnDelete.classList.toggle("hidden", !client);
+
+  document.getElementById("form-title").textContent =
+    client ? "Editar cliente" : "Nuevo cliente";
 
   clientForm.reset();
-  clientIdInput.value = client?.id || '';
+  document.getElementById("client-id").value = client?.id || "";
 
   if (client) {
-    // populate fields present in the client object
     Object.keys(client).forEach(key => {
-      const field = el(`c-${key}`);
-      if (field) {
-        if (field.type === 'checkbox') field.checked = !!client[key];
-        else field.value = client[key] ?? '';
-      }
+      const field = document.getElementById(`c-${key}`);
+      if (field) field.value = client[key] ?? "";
     });
   }
 }
 
 function closeForm() {
-  formSection.classList.add('hidden');
-  listSection.classList.remove('hidden');
-  formSection.setAttribute('aria-hidden', 'true');
+  formSection.classList.add("hidden");
+  listSection.classList.remove("hidden");
 }
 
-/* Edit / Delete handlers */
 async function onEditClick(e) {
-  const id = e.currentTarget.dataset.id;
-  if (!id) return notify('ID inexistente', 'error');
-  const { data, error } = await supabaseClient.from('clients').select('*').eq('id', id).single();
-  if (error) {
-    console.error('onEditClick error', error);
-    return notify('Error cargando registro', 'error');
-  }
+  const id = e.target.dataset.id;
+
+  const { data, error } = await client
+    .from("clients")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) return alert("Error cargando registro");
+
   openForm(data);
 }
 
 async function onDeleteClick(e) {
-  const id = e.currentTarget.dataset.id;
-  if (!id) return notify('ID inexistente', 'error');
-  if (!confirm('Eliminar este cliente?')) return;
-  const { error } = await supabaseClient.from('clients').delete().eq('id', id);
-  if (error) return notify(error.message, 'error');
-  notify('Registro eliminado', 'success');
+  if (!confirm("Eliminar?")) return;
+
+  const id = e.target.dataset.id;
+
+  const { error } = await client
+    .from("clients")
+    .delete()
+    .eq("id", id);
+
+  if (error) return alert(error.message);
+
   loadClients();
 }
 
-/* Submit form (create / update) */
-clientForm && clientForm.addEventListener('submit', async (ev) => {
+clientForm.addEventListener("submit", async ev => {
   ev.preventDefault();
-  const id = clientIdInput.value;
 
-  // basic validation
-  const nombre = c('nombre').trim();
-  if (!nombre) return notify('El nombre es obligatorio', 'error');
+  const id = document.getElementById("client-id").value;
 
   const payload = {
-    user_id: currentUser?.id ?? null,
-    nombre,
-    apellido: c('apellido').trim() || null,
-    instagram: c('instagram').trim() || null,
-    celular: c('celular').trim() || null,
-    email: c('email').trim() || null,
-    fecha_alta: c('fecha_alta') || null,
-    tipo_contacto: c('tipo_contacto') || null,
-    tipo_cliente: c('tipo_cliente') || null,
-    direccion: c('direccion') || null,
-    localidad: c('localidad') || null,
-    partido: c('partido') || null,
-    fecha_proximo_contacto: c('fecha_proximo_contacto') || null,
-    estado: c('estado') || null,
-    origen: c('origen') || null,
-    necesita_vender: (c('necesita_vender') === 'true'),
-    presupuesto_compra: c('presupuesto_compra') ? Number(c('presupuesto_compra')) : null,
-    zona_busqueda: c('zona_busqueda') || null,
-    observaciones: c('observaciones') || null
+    user_id: currentUser.id,
+    nombre: c("nombre"),
+    apellido: c("apellido"),
+    instagram: c("instagram"),
+    celular: c("celular"),
+    email: c("email"),
+    fecha_alta: c("fecha_alta") || null,
+    tipo_contacto: c("tipo_contacto"),
+    tipo_cliente: c("tipo_cliente"),
+    direccion: c("direccion"),
+    localidad: c("localidad"),
+    partido: c("partido"),
+    fecha_proximo_contacto: c("fecha_proximo_contacto") || null,
+    estado: c("estado"),
+    origen: c("origen"),
+    necesita_vender: c("necesita_vender") === "true",
+    presupuesto_compra: c("presupuesto_compra") || null,
+    zona_busqueda: c("zona_busqueda"),
+    observaciones: c("observaciones")
   };
 
-  try {
-    if (id) {
-      const { error } = await supabaseClient.from('clients').update(payload).eq('id', id);
-      if (error) return notify(error.message, 'error');
-      notify('Registro actualizado', 'success');
-    } else {
-      const { error } = await supabaseClient.from('clients').insert(payload);
-      if (error) return notify(error.message, 'error');
-      notify('Registro creado', 'success');
-    }
-    closeForm();
-    loadClients();
-  } catch (err) {
-    console.error('save client error', err);
-    notify('Error guardando registro', 'error');
-  }
-});
+  let response;
 
-btnDelete && btnDelete.addEventListener('click', async () => {
-  const id = clientIdInput.value;
-  if (!id) return notify('ID inexistente', 'error');
-  if (!confirm('Eliminar este cliente?')) return;
-  const { error } = await supabaseClient.from('clients').delete().eq('id', id);
-  if (error) return notify(error.message, 'error');
-  notify('Registro eliminado', 'success');
+  if (id) {
+    response = await client.from("clients").update(payload).eq("id", id);
+  } else {
+    response = await client.from("clients").insert(payload);
+  }
+
+  if (response.error) return alert(response.error.message);
+
   closeForm();
   loadClients();
 });
 
-/* ========== UTILITIES ========== */
-function escapeHtml(text) {
-  if (!text && text !== 0) return '';
-  return String(text)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
 
-/* ========== END ========== */
+btnDelete.addEventListener("click", async () => {
+  const id = document.getElementById("client-id").value;
+
+  if (!confirm("¿Eliminar este cliente?")) return;
+
+  const { error } = await client
+    .from("clients")
+    .delete()
+    .eq("id", id);
+
+  if (error) return alert(error.message);
+
+  closeForm();
+  loadClients();
+});
+
+
+// Helper
+function c(id) {
+  return document.getElementById(`c-${id}`).value;
+}
