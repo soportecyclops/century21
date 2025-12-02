@@ -3,46 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Cyclops CRM - Login</title>
+  <title>Cyclops CRM</title>
+  <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    /* Estilo inspirado en Century21: paleta sobria, header amarillo, layout limpio */
-    :root{
-      --brand-yellow: #f7c600;
-      --brand-dark: #111827;
-      --muted:#6b7280;
-      --card-bg:#ffffff;
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    }
-    html,body{height:100%;margin:0;background:#f3f4f6;color:var(--brand-dark)}
-    .container{max-width:1100px;margin:40px auto;padding:20px}
-    header{display:flex;align-items:center;gap:18px}
-    .logo{display:flex;align-items:center;gap:12px}
-    .logo .mark{width:56px;height:56px;background:var(--brand-yellow);border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;font-weight:800}
-    h1{margin:0;font-size:20px}
-    .card{background:var(--card-bg);padding:20px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
-
-    /* Login form */
-    .login-wrap{display:grid;grid-template-columns:1fr 420px;gap:32px}
-    .login-panel{padding:28px}
-    form{display:flex;flex-direction:column;gap:12px;width:100%}
-    label{font-size:13px;color:var(--muted)}
-    input[type=text],input[type=password],input[type=email],select,textarea{padding:10px;border-radius:8px;border:1px solid #e6e7ea;font-size:14px}
-    button{background:var(--brand-yellow);border:none;padding:10px 14px;border-radius:8px;font-weight:700;cursor:pointer}
-    .muted{color:var(--muted);font-size:13px}
-
-    /* Panel */
-    #panel{display:none}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left}
-    .actions button{margin-right:6px}
-
-    .hidden{display:none}
-    @media(max-width:900px){.login-wrap{grid-template-columns:1fr}}
-  </style>
 </head>
 <body>
   <div class="container">
@@ -61,16 +26,15 @@
         <h2>Iniciar sesión</h2>
         <p class="muted">Acceso seguro. Solo usuarios autorizados.</p>
         <form id="login-form">
-          <label for="email">Email</label>
+          <label>Email</label>
           <input id="email" type="email" required placeholder="tu@correo.com">
-          <label for="password">Contraseña</label>
+          <label>Contraseña</label>
           <input id="password" type="password" required placeholder="********">
-          <div style="display:flex;gap:8px;align-items:center">
+          <div class="login-buttons">
             <button type="submit">Entrar</button>
             <button type="button" id="btn-signup">Crear cuenta</button>
             <button type="button" id="btn-signout" class="hidden">Cerrar sesión</button>
           </div>
-          <p class="muted">Si olvidaste tu contraseña, usa el botón de "Crear cuenta" para registrarte y luego restaura.</p>
         </form>
       </section>
 
@@ -87,7 +51,7 @@
         </div>
 
         <div id="list-section">
-          <input id="q" placeholder="Buscar por nombre, email o celular" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e7ea;margin-bottom:10px">
+          <input id="q" placeholder="Buscar por nombre, email o celular" class="search">
           <table>
             <thead>
               <tr>
@@ -106,6 +70,7 @@
           <h3 id="form-title">Nuevo cliente</h3>
           <form id="client-form">
             <input type="hidden" id="client-id">
+
             <label>Nombre</label><input id="c-nombre" required>
             <label>Apellido</label><input id="c-apellido">
             <label>Instagram</label><input id="c-instagram">
@@ -114,19 +79,22 @@
             <label>Fecha alta</label><input id="c-fecha_alta" type="date">
             <label>Tipo contacto</label><input id="c-tipo_contacto">
             <label>Tipo cliente</label><input id="c-tipo_cliente">
-            <label>Dirección</label><input id="c-direccion">
+            <label>Direccion</label><input id="c-direccion">
             <label>Localidad</label><input id="c-localidad">
             <label>Partido</label><input id="c-partido">
-            <label>Fecha último contacto</label><input id="c-fecha_ultimo_contacto" type="date">
             <label>Fecha próximo contacto</label><input id="c-fecha_proximo_contacto" type="date">
             <label>Estado</label><input id="c-estado">
             <label>Origen</label><input id="c-origen">
-            <label>Necesita vender</label><select id="c-necesita_vender"><option value="false">No</option><option value="true">Si</option></select>
+            <label>Necesita vender</label>
+            <select id="c-necesita_vender">
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
             <label>Presupuesto compra</label><input id="c-presupuesto_compra" type="number" step="0.01">
             <label>Zona búsqueda</label><input id="c-zona_busqueda">
             <label>Observaciones</label><textarea id="c-observaciones"></textarea>
 
-            <div style="margin-top:12px;display:flex;gap:8px">
+            <div class="form-buttons">
               <button type="submit">Guardar</button>
               <button type="button" id="btn-cancel">Cancelar</button>
               <button type="button" id="btn-delete" class="hidden">Eliminar</button>
@@ -135,248 +103,10 @@
         </div>
 
       </section>
-
     </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.27.0/dist/umd/supabase.min.js"></script>
-  <script>
-    // === CONFIGURE: REPLACE these with your project's values ===
-    const SUPABASE_URL = 'https://REPLACE_WITH_YOUR_SUPABASE_URL';
-    const SUPABASE_ANON_KEY = 'REPLACE_WITH_YOUR_ANON_KEY';
-    // ==========================================================
-
-    const supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Helper selectors
-    const loginForm = document.getElementById('login-form');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const btnSignup = document.getElementById('btn-signup');
-    const btnSignout = document.getElementById('btn-signout');
-
-    const panel = document.getElementById('panel');
-    const userWelcome = document.getElementById('user-welcome');
-    const userRoleEl = document.getElementById('user-role');
-    const btnLogout = document.getElementById('btn-logout');
-    const clientsTbody = document.getElementById('clients-tbody');
-    const q = document.getElementById('q');
-
-    const formSection = document.getElementById('form-section');
-    const listSection = document.getElementById('list-section');
-    const btnNew = document.getElementById('btn-new');
-    const clientForm = document.getElementById('client-form');
-    const btnCancel = document.getElementById('btn-cancel');
-    const btnDelete = document.getElementById('btn-delete');
-
-    let currentUser = null;
-    let currentProfile = null;
-
-    // --- AUTH FLOW ---
-    async function handleLogin(e){
-      e.preventDefault();
-      const email = emailInput.value;
-      const password = passwordInput.value;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if(error){
-        alert('Error: ' + error.message);
-        return;
-      }
-      // session set automatically
-      await loadUserAndShowPanel();
-    }
-
-    async function handleSignup(){
-      const email = emailInput.value;
-      const password = passwordInput.value;
-      if(!email || !password){ alert('Completa email y contraseña'); return }
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if(error){ alert('Error: ' + error.message); return }
-      alert('Cuenta creada. Revisa tu email para confirmar. Después inicia sesión.');
-    }
-
-    async function handleLogout(){
-      await supabase.auth.signOut();
-      currentUser = null; currentProfile = null;
-      panel.style.display = 'none';
-      document.querySelector('.login-panel').style.display = 'block';
-    }
-
-    loginForm.addEventListener('submit', handleLogin);
-    btnSignup.addEventListener('click', handleSignup);
-    btnLogout.addEventListener('click', handleLogout);
-
-    // --- Load user & profile ---
-    async function loadUserAndShowPanel(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){
-        alert('No hay usuario activo.');
-        return;
-      }
-      currentUser = user;
-      // fetch profile
-      const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      if(error || !profile){
-        // If no profile, create default role=user
-        await supabase.from('profiles').upsert({ id: user.id, full_name: user.email, role: 'user' });
-        currentProfile = { id: user.id, full_name: user.email, role: 'user' };
-      } else currentProfile = profile;
-
-      userWelcome.textContent = currentProfile.full_name || (user.email || 'Usuario');
-      userRoleEl.textContent = currentProfile.role;
-      document.querySelector('.login-panel').style.display = 'none';
-      panel.style.display = 'block';
-
-      // Show signout button
-      btnSignout.classList.remove('hidden');
-      await loadClients();
-    }
-
-    // on page load: check session
-    (async ()=>{
-      const { data } = await supabase.auth.getSession();
-      if(data.session) await loadUserAndShowPanel();
-    })();
-
-    // --- CLIENTS CRUD ---
-    async function loadClients(){
-      clientsTbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
-      const search = q.value || '';
-      // owner or admin policy enforced server-side by RLS
-      let query = supabase.from('clients').select('*');
-      if(search) query = query.ilike('first_name', `%${search}%`).or(`email.ilike.%${search}%,phone.ilike.%${search}%`);
-      const { data, error } = await query.order('created_at', { ascending: false }).limit(200);
-      if(error){ console.error(error); clientsTbody.innerHTML = `<tr><td colspan="5">Error cargando</td></tr>`; return }
-      clientsTbody.innerHTML = '';
-      if(!data || data.length===0){ clientsTbody.innerHTML = '<tr><td colspan="5">No hay registros</td></tr>'; return }
-      data.forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${(c.first_name||'')+' '+(c.last_name||'')}</td>
-          <td>${c.email||c.phone||c.instagram||''}</td>
-          <td>${c.status||''}</td>
-          <td>${c.purchase_budget||''}</td>
-          <td class="actions">
-            <button data-id="${c.id}" class="btn-edit">Editar</button>
-            <button data-id="${c.id}" class="btn-delete">Eliminar</button>
-          </td>
-        `;
-        clientsTbody.appendChild(tr);
-      });
-
-      // wire edit/delete
-      document.querySelectorAll('.btn-edit').forEach(b=>b.addEventListener('click', onEditClick));
-      document.querySelectorAll('.btn-delete').forEach(b=>b.addEventListener('click', onDeleteClick));
-    }
-
-    q.addEventListener('input', () => { loadClients(); });
-
-    btnNew.addEventListener('click', () => { openForm(); });
-    btnCancel.addEventListener('click', () => { closeForm(); });
-
-    function openForm(client){
-      listSection.classList.add('hidden');
-      formSection.classList.remove('hidden');
-      document.getElementById('form-title').textContent = client ? 'Editar cliente' : 'Nuevo cliente';
-      btnDelete.classList.toggle('hidden', !client);
-      if(client){
-        document.getElementById('client-id').value = client.id;
-        document.getElementById('c-nombre').value = client.first_name||'';
-        document.getElementById('c-apellido').value = client.last_name||'';
-        document.getElementById('c-instagram').value = client.instagram||'';
-        document.getElementById('c-celular').value = client.phone||'';
-        document.getElementById('c-email').value = client.email||'';
-        document.getElementById('c-fecha_alta').value = client.signup_date||'';
-        document.getElementById('c-tipo_contacto').value = client.contact_type||'';
-        document.getElementById('c-tipo_cliente').value = client.client_type||'';
-        document.getElementById('c-direccion').value = client.address||'';
-        document.getElementById('c-localidad').value = client.locality||'';
-        document.getElementById('c-partido').value = client.district||'';
-        document.getElementById('c-fecha_ultimo_contacto').value = client.last_contact_date||'';
-        document.getElementById('c-fecha_proximo_contacto').value = client.next_contact_date||'';
-        document.getElementById('c-estado').value = client.status||'';
-        document.getElementById('c-origen').value = client.origin||'';
-        document.getElementById('c-necesita_vender').value = client.needs_to_sell ? 'true' : 'false';
-        document.getElementById('c-presupuesto_compra').value = client.purchase_budget||'';
-        document.getElementById('c-zona_busqueda').value = client.search_area||'';
-        document.getElementById('c-observaciones').value = client.notes||'';
-      } else {
-        clientForm.reset(); document.getElementById('client-id').value = '';
-      }
-    }
-
-    function closeForm(){
-      formSection.classList.add('hidden');
-      listSection.classList.remove('hidden');
-    }
-
-    async function onEditClick(e){
-      const id = e.currentTarget.dataset.id;
-      const { data, error } = await supabase.from('clients').select('*').eq('id', id).single();
-      if(error){ alert('Error al cargar registro'); return }
-      openForm(data);
-    }
-
-    async function onDeleteClick(e){
-      if(!confirm('Confirmar eliminación?')) return;
-      const id = e.currentTarget.dataset.id;
-      const { error } = await supabase.from('clients').delete().eq('id', id);
-      if(error){ alert('Error eliminando: '+error.message); return }
-      await loadClients();
-    }
-
-    clientForm.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-      const id = document.getElementById('client-id').value;
-      const payload = {
-        user_id: currentUser.id,
-        first_name: document.getElementById('c-nombre').value,
-        last_name: document.getElementById('c-apellido').value,
-        instagram: document.getElementById('c-instagram').value,
-        phone: document.getElementById('c-celular').value,
-        email: document.getElementById('c-email').value,
-        signup_date: document.getElementById('c-fecha_alta').value || null,
-        contact_type: document.getElementById('c-tipo_contacto').value,
-        client_type: document.getElementById('c-tipo_cliente').value,
-        address: document.getElementById('c-direccion').value,
-        locality: document.getElementById('c-localidad').value,
-        district: document.getElementById('c-partido').value,
-        last_contact_date: document.getElementById('c-fecha_ultimo_contacto').value || null,
-        next_contact_date: document.getElementById('c-fecha_proximo_contacto').value || null,
-        status: document.getElementById('c-estado').value,
-        origin: document.getElementById('c-origen').value,
-        needs_to_sell: document.getElementById('c-necesita_vender').value === 'true',
-        purchase_budget: document.getElementById('c-presupuesto_compra').value || null,
-        search_area: document.getElementById('c-zona_busqueda').value,
-        notes: document.getElementById('c-observaciones').value
-      };
-
-      if(id){
-        // update
-        const { error } = await supabase.from('clients').update(payload).eq('id', id);
-        if(error){ alert('Error actualizando: '+error.message); return }
-        alert('Actualizado');
-      } else {
-        // insert
-        const { data, error } = await supabase.from('clients').insert(payload);
-        if(error){ alert('Error creando: '+error.message); return }
-        alert('Creado');
-      }
-      closeForm();
-      await loadClients();
-    });
-
-    btnDelete.addEventListener('click', async () => {
-      const id = document.getElementById('client-id').value;
-      if(!id) return;
-      if(!confirm('Eliminar este cliente?')) return;
-      const { error } = await supabase.from('clients').delete().eq('id', id);
-      if(error){ alert('Error: '+error.message); return }
-      alert('Eliminado');
-      closeForm();
-      await loadClients();
-    });
-
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
