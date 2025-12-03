@@ -3,56 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cyclops CRM — Century21</title>
+  <title>Cyclops CRM — Admin Panel</title>
 
-  <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Supabase UMD (CDN) -->
+  <!-- Supabase UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-  <!-- App script (defer to ensure DOM & supabase lib loaded) -->
+  <!-- App -->
   <script defer src="app.js"></script>
 </head>
 <body>
   <div class="app">
 
-    <!-- AUTH / LOGIN -->
+    <!-- LOGIN -->
     <section id="login-view" class="card auth-card">
-      <div class="brand">
-        <div class="mark">C21</div>
-        <div>
-          <h1>Cyclops CRM</h1>
-          <div class="muted">Panel privado — Century21 style</div>
-        </div>
-      </div>
+      <div class="brand"><div class="mark">C21</div><div><h1>Cyclops CRM</h1><div class="muted">Panel</div></div></div>
 
       <form id="login-form" class="form">
-        <label for="login-email">Email</label>
-        <input id="login-email" type="email" autocomplete="email" required placeholder="administrador@soportecyclops.com.ar">
+        <label>Email</label>
+        <input id="login-email" type="email" autocomplete="email" required placeholder="administrador@...">
 
-        <label for="login-password">Contraseña</label>
-        <input id="login-password" type="password" autocomplete="current-password" required placeholder="********">
+        <label>Contraseña</label>
+        <input id="login-password" type="password" autocomplete="current-password" required>
 
         <div class="form-row">
           <button class="btn btn-primary" type="submit">Entrar</button>
         </div>
-
         <div id="login-feedback" class="muted small"></div>
       </form>
     </section>
 
-    <!-- DASHBOARD (hidden until login) -->
+    <!-- DASHBOARD -->
     <section id="dashboard-view" class="hidden">
       <header class="topbar card">
         <div class="brand-left">
           <div class="mark small">C21</div>
-          <div>
-            <strong id="user-welcome">Usuario</strong>
-            <div id="user-role" class="muted small">role</div>
-          </div>
+          <div><strong id="user-welcome">Usuario</strong><div id="user-role" class="muted small">role</div></div>
         </div>
-
         <div class="top-actions">
           <div id="role-badge" class="badge muted small">--</div>
           <button id="btn-logout" class="btn btn-ghost">Cerrar sesión</button>
@@ -60,68 +47,110 @@
       </header>
 
       <main class="container">
+
+        <!-- ACTIONS -->
         <section class="card">
           <div class="topbar-actions">
             <button id="btn-new" class="btn btn-primary">Nuevo cliente</button>
-            <input id="search" class="search" placeholder="Buscar por nombre, email o teléfono">
-            <button id="btn-refresh" class="btn btn-ghost">Actualizar</button>
-          </div>
+            <input id="search" class="search" placeholder="Buscar cliente (nombre/email/phone)">
 
-          <div id="list-wrap" class="table-wrap">
+            <button id="btn-refresh" class="btn btn-ghost">Actualizar</button>
+
+            <!-- Admin-only: Users panel button -->
+            <button id="btn-users-panel" class="btn btn-ghost hidden">Panel de Usuarios</button>
+          </div>
+        </section>
+
+        <!-- CLIENTS TABLE -->
+        <section class="card" id="clients-section">
+          <h3>Clientes</h3>
+          <div class="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Teléfono</th>
-                  <th>Localidad</th>
-                  <th>Distrito</th>
-                  <th>Estado</th>
-                  <th>Notas</th>
-                  <th></th>
+                  <th>Nombre</th><th>Apellido</th><th>Instagram</th><th>Email</th><th>Teléfono</th>
+                  <th>Signup</th><th>Contact type</th><th>Client type</th><th>Address</th>
+                  <th>Localidad</th><th>Distrito</th><th>Last contact</th><th>Next contact</th>
+                  <th>Status</th><th>Origin</th><th>Needs to sell</th><th>Budget</th><th>Search area</th><th>Notes</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
-              <tbody id="client-list">
-                <tr><td colspan="8">Cargando...</td></tr>
-              </tbody>
+              <tbody id="client-list"><tr><td colspan="20">Cargando...</td></tr></tbody>
             </table>
           </div>
         </section>
 
+        <!-- CLIENT FORM -->
         <section id="form-section" class="card hidden">
           <h3 id="form-title">Nuevo cliente</h3>
-          <form id="client-form" class="form two-col">
-            <input type="hidden" id="client-id">
+          <form id="client-form" class="form-grid">
+            <input id="client-id" type="hidden">
 
-            <label>Nombre</label><input id="first_name" />
-            <label>Apellido</label><input id="last_name" />
+            <label>First name</label><input id="first_name">
+            <label>Last name</label><input id="last_name">
+            <label>Instagram</label><input id="instagram">
+            <label>Email</label><input id="email" type="email">
+            <label>Phone</label><input id="phone">
 
-            <label>Email</label><input id="email" type="email" />
-            <label>Teléfono</label><input id="phone" />
+            <label>Signup date</label><input id="signup_date" type="date">
+            <label>Contact type</label><input id="contact_type">
+            <label>Client type</label><input id="client_type">
+            <label>Address</label><input id="address">
+            <label>Locality</label><input id="locality">
 
-            <label>Localidad</label><input id="locality" />
-            <label>Distrito</label><input id="district" />
+            <label>District</label><input id="district">
+            <label>Last contact date</label><input id="last_contact_date" type="date">
+            <label>Next contact date</label><input id="next_contact_date" type="date">
+            <label>Status</label><input id="status">
+            <label>Origin</label><input id="origin">
 
-            <label>Estado</label>
-            <select id="status">
-              <option value="">-</option>
-              <option value="nuevo">Nuevo</option>
-              <option value="contactado">Contactado</option>
-              <option value="seguimiento">Seguimiento</option>
-              <option value="cerrado">Cerrado</option>
-            </select>
+            <label>Needs to sell</label>
+            <select id="needs_to_sell"><option value="false">No</option><option value="true">Sí</option></select>
 
-            <label class="full">Notas</label>
-            <input id="notes" class="full" />
+            <label>Purchase budget</label><input id="purchase_budget" type="number" step="0.01">
+            <label>Search area</label><input id="search_area">
+            <label class="full">Notes</label><textarea id="notes" class="full" rows="3"></textarea>
 
             <div class="form-row full">
               <button type="submit" class="btn btn-primary">Guardar</button>
               <button type="button" id="btn-cancel" class="btn btn-ghost">Cancelar</button>
               <button type="button" id="btn-delete" class="btn btn-danger hidden">Eliminar</button>
             </div>
-
             <div id="form-feedback" class="muted small"></div>
           </form>
+        </section>
+
+        <!-- USERS PANEL (admin only) -->
+        <section id="users-section" class="card hidden">
+          <h3>Panel de Usuarios (Admin)</h3>
+
+          <!-- create user form -->
+          <form id="create-user-form" class="form">
+            <label>Email</label><input id="new-user-email" type="email" required>
+            <label>Password</label><input id="new-user-password" type="password" required>
+            <label>Full name</label><input id="new-user-fullname">
+            <label>Role</label>
+            <select id="new-user-role">
+              <option value="user">user</option>
+              <option value="moderador">moderador</option>
+              <option value="admin">admin</option>
+            </select>
+
+            <div class="form-row">
+              <button type="submit" class="btn btn-primary">Crear usuario</button>
+              <div id="create-user-feedback" class="muted small"></div>
+            </div>
+          </form>
+
+          <!-- profiles list -->
+          <div class="table-wrapper" style="margin-top:12px">
+            <table>
+              <thead>
+                <tr><th>Full name</th><th>Role</th><th>Created at</th><th>Email</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="profiles-list"><tr><td colspan="5">Cargando...</td></tr></tbody>
+            </table>
+          </div>
         </section>
 
       </main>
