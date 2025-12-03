@@ -2,7 +2,7 @@
 
 /* CONFIG: PONER tus valores o cargarlos desde config.js (no subir a repo) */
 const SUPABASE_URL = "https://kliecdqosksoilbwgbxx.supabase.co";
-const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_ANON_KEY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsaWVjZHFvc2tzb2lsYndnYnh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2NjE3NjIsImV4cCI6MjA4MDIzNzc2Mn0.kLcGwhxDxCFw1865dvKuG7jUulWMd3WJI1de5W2kEOE";
 
 /* Supabase client */
 const supabase = window.supabase && window.supabase.createClient
