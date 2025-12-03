@@ -1,144 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C21 CRM — Gestión de Clientes</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cyclops CRM — Century21</title>
 
-    <!-- SUPABASE CDN v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Supabase UMD (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- App script (defer to ensure DOM & supabase lib loaded) -->
+  <script defer src="app.js"></script>
 </head>
-
 <body>
+  <div class="app">
 
-    <!-- LOGIN -->
-    <section id="login-view" class="auth-container">
-        <div class="auth-box">
-            <h2 class="logo">CENTURY <span>21</span></h2>
-            <h3 class="subtitle">Panel de Gestión</h3>
-
-            <form id="login-form">
-                <div class="field">
-                    <label>Email</label>
-                    <input type="email" id="login-email" required />
-                </div>
-
-                <div class="field">
-                    <label>Contraseña</label>
-                    <input type="password" id="login-password" required />
-                </div>
-
-                <button class="btn-gold" type="submit">Ingresar</button>
-                <p class="feedback" id="login-feedback"></p>
-            </form>
+    <!-- AUTH / LOGIN -->
+    <section id="login-view" class="card auth-card">
+      <div class="brand">
+        <div class="mark">C21</div>
+        <div>
+          <h1>Cyclops CRM</h1>
+          <div class="muted">Panel privado — Century21 style</div>
         </div>
+      </div>
+
+      <form id="login-form" class="form">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" autocomplete="email" required placeholder="administrador@soportecyclops.com.ar">
+
+        <label for="login-password">Contraseña</label>
+        <input id="login-password" type="password" autocomplete="current-password" required placeholder="********">
+
+        <div class="form-row">
+          <button class="btn btn-primary" type="submit">Entrar</button>
+        </div>
+
+        <div id="login-feedback" class="muted small"></div>
+      </form>
     </section>
 
-    <!-- DASHBOARD -->
-    <section id="dashboard-view" class="dashboard hidden">
-        <header class="topbar">
-            <h1 class="topbar-title">CRM de Clientes</h1>
-            <div id="role-badge" class="badge"></div>
-            <button id="btn-logout" class="btn-black">Cerrar Sesión</button>
-        </header>
+    <!-- DASHBOARD (hidden until login) -->
+    <section id="dashboard-view" class="hidden">
+      <header class="topbar card">
+        <div class="brand-left">
+          <div class="mark small">C21</div>
+          <div>
+            <strong id="user-welcome">Usuario</strong>
+            <div id="user-role" class="muted small">role</div>
+          </div>
+        </div>
 
-        <main class="content">
+        <div class="top-actions">
+          <div id="role-badge" class="badge muted small">--</div>
+          <button id="btn-logout" class="btn btn-ghost">Cerrar sesión</button>
+        </div>
+      </header>
 
-            <!-- Formulario -->
-            <section class="card">
-                <h2>Agregar / Editar Cliente</h2>
+      <main class="container">
+        <section class="card">
+          <div class="topbar-actions">
+            <button id="btn-new" class="btn btn-primary">Nuevo cliente</button>
+            <input id="search" class="search" placeholder="Buscar por nombre, email o teléfono">
+            <button id="btn-refresh" class="btn btn-ghost">Actualizar</button>
+          </div>
 
-                <form id="client-form">
-                    <input type="hidden" id="client-id">
+          <div id="list-wrap" class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Teléfono</th>
+                  <th>Localidad</th>
+                  <th>Distrito</th>
+                  <th>Estado</th>
+                  <th>Notas</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="client-list">
+                <tr><td colspan="8">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-                    <div class="grid-2">
+        <section id="form-section" class="card hidden">
+          <h3 id="form-title">Nuevo cliente</h3>
+          <form id="client-form" class="form two-col">
+            <input type="hidden" id="client-id">
 
-                        <div class="field">
-                            <label>Nombre</label>
-                            <input type="text" id="first_name" required />
-                        </div>
+            <label>Nombre</label><input id="first_name" />
+            <label>Apellido</label><input id="last_name" />
 
-                        <div class="field">
-                            <label>Apellido</label>
-                            <input type="text" id="last_name" required />
-                        </div>
+            <label>Email</label><input id="email" type="email" />
+            <label>Teléfono</label><input id="phone" />
 
-                        <div class="field">
-                            <label>Email</label>
-                            <input type="email" id="email" />
-                        </div>
+            <label>Localidad</label><input id="locality" />
+            <label>Distrito</label><input id="district" />
 
-                        <div class="field">
-                            <label>Teléfono</label>
-                            <input type="text" id="phone" />
-                        </div>
+            <label>Estado</label>
+            <select id="status">
+              <option value="">-</option>
+              <option value="nuevo">Nuevo</option>
+              <option value="contactado">Contactado</option>
+              <option value="seguimiento">Seguimiento</option>
+              <option value="cerrado">Cerrado</option>
+            </select>
 
-                        <div class="field">
-                            <label>Localidad</label>
-                            <input type="text" id="locality" />
-                        </div>
+            <label class="full">Notas</label>
+            <input id="notes" class="full" />
 
-                        <div class="field">
-                            <label>Distrito</label>
-                            <input type="text" id="district" />
-                        </div>
+            <div class="form-row full">
+              <button type="submit" class="btn btn-primary">Guardar</button>
+              <button type="button" id="btn-cancel" class="btn btn-ghost">Cancelar</button>
+              <button type="button" id="btn-delete" class="btn btn-danger hidden">Eliminar</button>
+            </div>
 
-                        <div class="field">
-                            <label>Estado</label>
-                            <select id="status">
-                                <option value="nuevo">Nuevo</option>
-                                <option value="contactado">Contactado</option>
-                                <option value="seguimiento">Seguimiento</option>
-                                <option value="cerrado">Cerrado</option>
-                            </select>
-                        </div>
+            <div id="form-feedback" class="muted small"></div>
+          </form>
+        </section>
 
-                        <div class="field">
-                            <label>Notas</label>
-                            <input type="text" id="notes" />
-                        </div>
-
-                    </div>
-
-                    <button class="btn-gold w-full" type="submit">Guardar Cliente</button>
-                    <p class="feedback" id="form-feedback"></p>
-                </form>
-            </section>
-
-            <!-- Buscador -->
-            <section class="card">
-                <div class="search-row">
-                    <input id="search" type="text" placeholder="Buscar cliente...">
-                    <button id="btn-refresh" class="btn-black">Actualizar</button>
-                </div>
-            </section>
-
-            <!-- Tabla -->
-            <section class="card">
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Localidad</th>
-                                <th>Distrito</th>
-                                <th>Estado</th>
-                                <th>Notas</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="client-list"></tbody>
-                    </table>
-                </div>
-            </section>
-
-        </main>
+      </main>
     </section>
 
-    <script src="app.js"></script>
+    <footer class="site-footer small muted">© Cyclops CRM</footer>
+  </div>
 </body>
 </html>
